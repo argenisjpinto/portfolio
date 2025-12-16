@@ -209,6 +209,28 @@
     links.forEach(link => link.addEventListener('click', () => menu.classList.add('hidden')));
   }
 
+  // --- Close mobile menu on scroll ---
+  let lastScrollY = window.scrollY;
+
+  window.addEventListener('scroll', () => {
+    // Solo aplica en mobile (md:hidden => <768px aprox)
+    if (window.innerWidth >= 768) return;
+
+    // Si el menú está abierto (no tiene 'hidden'), lo cerramos al primer scroll
+    if (menu && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+    }
+
+    lastScrollY = window.scrollY;
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      if (menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    }, { passive: true });
+
+
   // --- 3) Scroll Reveal + Skill Bars + Counters ---
   const revealElements = $$('.reveal');
   const counters = $$('.counter');
@@ -400,6 +422,52 @@
     });
   }
 
+  (() => {
+    const modal = document.getElementById('videoModal');
+    const backdrop = document.getElementById('videoModalBackdrop');
+    const closeBtn = document.getElementById('videoModalClose');
+    const frame = document.getElementById('videoModalFrame');
+    const titleEl = document.getElementById('videoModalTitle');
+
+    if (!modal || !backdrop || !closeBtn || !frame || !titleEl) return;
+
+    const isCoarsePointer = window.matchMedia?.('(pointer: coarse)').matches;
+
+    function openModal(url, title) {
+      // En mobile: mejor abrir LinkedIn directo (embeds suelen fallar)
+      if (isCoarsePointer) {
+        window.open(url.replace('/embed/feed/update/', '/feed/update/'), '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      titleEl.textContent = title || 'Video';
+      frame.src = url;
+      modal.classList.remove('hidden');
+      document.documentElement.classList.add('overflow-hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      frame.src = ''; // corta el video
+      document.documentElement.classList.remove('overflow-hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-video-url]');
+      if (!btn) return;
+
+      const url = btn.getAttribute('data-video-url');
+      const title = btn.getAttribute('data-video-title') || 'Video';
+      if (url) openModal(url, title);
+    });
+
+    backdrop.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+    });
+  })();
 
   // --- 5) Easter Egg ---
   console.log(
