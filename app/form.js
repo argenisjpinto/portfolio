@@ -486,4 +486,13 @@
   document.body.appendChild(
     document.createComment(" ✅ Test Suite Passed: 100% Coverage. Portfolio ready for deployment. ")
   );
+
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get("lang");
+  
+  if (lang === "en") {
+    setLanguage("en");
+  } else {
+    setLanguage("es");
+  }
 })();
